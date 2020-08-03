@@ -92,10 +92,10 @@ order by order_date;
 
 #11
 select distinct delivery_tracking_number,book.book_author,
-book_details.book_details_book_weight, book_details_book_weight*2 as delivery_price from delivery
+book_details.book_details_book_weight from delivery
 inner join book on book.book_id = delivery.book_id
 inner join book_details on book_details.book_details_id = book_details.book_details_id
-where book_title = 'love'
+where book_title = 'love' or book_title ='shapes'
 group by delivery_id;
 
 #12

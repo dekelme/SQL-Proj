@@ -15,35 +15,40 @@
  * ===================================================================
  */
 
-/**-------------------------------------------------------------------
- *  Include mysql.h file local header file(declaration of class)
- *------------------------------------------------------------------*/
+ /**-------------------------------------------------------------------
+  *  Include mysql.h file local header file(declaration of class)
+  *------------------------------------------------------------------*/
 
 #include "database.h"
+#include <vector>
+#include <string>
+#include<stdio.h> 
 
-/**
- *--------------------------------------------------------------------
- *       Class:  MySQL
- *      Method:  MySQL :: MySQL()
- * Description:  Constructor to initialize database conectivity
- *--------------------------------------------------------------------
- */
 
-MySQL :: MySQL()
+
+  /**
+   *--------------------------------------------------------------------
+   *       Class:  MySQL
+   *      Method:  MySQL :: MySQL()
+   * Description:  Constructor to initialize database conectivity
+   *--------------------------------------------------------------------
+   */
+
+MySQL::MySQL()
 {
     connect = mysql_init(NULL);
-    if ( !connect )
+    if (!connect)
     {
         cout << "MySQL Initialization Failed";
-    }   
+    }
 
-    connect = mysql_real_connect(connect, SERVER, USER, PASSWORD, DATABASE, 0,NULL,0);
-    
-    if ( connect )
+    connect = mysql_real_connect(connect, SERVER, USER, PASSWORD, DATABASE, 0, NULL, 0);
+
+    if (connect)
     {
         cout << "Connection Succeeded\n";
     }
-    
+
     else
     {
         cout << "Connection Failed\n";
@@ -63,22 +68,23 @@ MySQL :: MySQL()
 
 
 
-void MySQL :: ShowTables()
+
+void MySQL::ShowTables()
 {
     /** Add MySQL Query */
-    mysql_query (connect,"show tables");                              
-                                                                          
+    mysql_query(connect, "show tables");
+
     i = 0;
-                                                                         
-    res_set = mysql_store_result(connect);                              
-                                                                          
-    unsigned int numrows = mysql_num_rows(res_set);                   
-                                                                          
-    cout << " Tables in " << DATABASE << " database " << endl;        
-                                                                         
-    while (((row=mysql_fetch_row(res_set)) != NULL))
-    {                                                                 
-        cout << row[i] << endl;                                       
+
+    res_set = mysql_store_result(connect);
+
+    unsigned int numrows = mysql_num_rows(res_set);
+
+    cout << " Tables in " << DATABASE << " database " << endl;
+
+    while (((row = mysql_fetch_row(res_set)) != NULL))
+    {
+        cout << row[i] << endl;
     }
 
 }
@@ -96,7 +102,7 @@ void MySQL :: ShowTables()
 
 MySQL :: ~MySQL()
 {
-    mysql_close (connect);
+    mysql_close(connect);
 }
 
 
@@ -104,22 +110,21 @@ char* MySQL::stringChar(string a)
 {
     int n = a.length();
 
-    char* char_array = new char [n + 1];
+    char* char_array = new char[n + 1];
 
     strcpy(char_array, a.c_str());
-
-    for (int i = 0; i < n; i++)
-        cout << char_array[i];
     return char_array;
 }
+
 
 void MySQL::question1()
 {
     string first = "SELECT DISTINCT supply_location from book inner join supply on book.supply_id = supply.supply_id and book_title ='";
     string last = "' where supply.supply_location = 'store' or supply.supply_location; ";
-    string input;
+    char input[250];
     cout << "Which book do you want to search in the supply" << endl;
-    cin >> input;
+    cin.ignore();
+    cin.getline(input, 250);
     first = first + input + last;
     char* all = stringChar(first);
     mysql_query(connect, all);
@@ -129,7 +134,11 @@ void MySQL::question1()
     cout << endl;
     if (res_set != nullptr && res_set->row_count != 0) {
         row = mysql_fetch_row(res_set);
-        cout << "The book " << input <<" is at " << row[0] << endl;
+        cout << "The book " << input << " is at " << row[0] << endl;
+    }
+    else
+    {
+        cout << endl << "This book: " << input << " is not exist in the store supply" << endl;
     }
 
     system("pause");
@@ -146,7 +155,7 @@ void MySQL::question2()
     cout << endl;
     if (res_set != nullptr && res_set->row_count != 0) {
         row = mysql_fetch_row(res_set);
-        cout << "The oldest customer is " << row[0] << " "<< row[1] << " he joined in " << row[2] << endl;
+        cout << "The oldest customer is " << row[0] << " " << row[1] << " he joined in " << row[2] << endl;
     }
 
     system("pause");
@@ -163,7 +172,7 @@ void MySQL::question3()
     cout << endl;
     if (res_set != nullptr && res_set->row_count != 0) {
         row = mysql_fetch_row(res_set);
-        cout << "The oldest oldest book is " << row[0] <<" the book author is " << row[1] << endl;
+        cout << "The oldest oldest book is " << row[0] << " the book author is " << row[1] << endl;
     }
 
     system("pause");
@@ -179,9 +188,9 @@ void MySQL::question4()
     res_set = mysql_store_result(connect);
     cout << endl;
     if (res_set != nullptr && res_set->row_count != 0) {
-        cout << "book title\t " << " book author\t " << "person first name\t" << "person last name\t" << "order date\t" << endl;
+        cout << "book title\t " << " book author\t " << "person first name\t " << "person last name\t " << "order date\t " << endl;
         while (((row = mysql_fetch_row(res_set)) != NULL))
-            cout << "\t" << row[0] << "\t" << row[1] << "\t" << row[2] << "\t" << row[3] << "\t" << row[4] << endl;
+            cout << row[0] << "\t" << row[1] << "\t" << row[2] << "\t" << row[3] << "\t" << row[4] << endl;
     }
 
     system("pause");
@@ -190,10 +199,11 @@ void MySQL::question4()
 void MySQL::question5()
 {
     string first = "select book_title,book_author,count(book.book_title) from book inner join buy_book_store on book.book_id = buy_book_store.book_id and book.book_title = '";
-    string input;
+    char input[250];
     string last = "';";
     cout << "Enter a book name to check how many copies sold:" << endl;
-    cin >> input;
+    cin.ignore();
+    cin.getline(input, 250);
     first = first + input + last;
     char* all = stringChar(first);
     mysql_query(connect, all);
@@ -204,6 +214,10 @@ void MySQL::question5()
     if (res_set != nullptr && res_set->row_count != 0) {
         row = mysql_fetch_row(res_set);
         cout << "The book " << input << " is sold " << row[2] << " times " << endl;
+    }
+    else
+    {
+        cout << endl << "This book: " << input << " is not exist in the store supply" << endl;
     }
 
     system("pause");
@@ -230,6 +244,10 @@ void MySQL::question6()
     if (res_set != nullptr && res_set->row_count != 0) {
         row = mysql_fetch_row(res_set);
         cout << "The book author is " << row[0] << endl << "between " << input << " and " << input2 << endl << "have the highest number of readings that is " << row[1] << endl;
+    }
+    else
+    {
+        cout << endl << "You typed the wrong dates:" << input << " and " << input2 << endl;
     }
 
     system("pause");
@@ -264,8 +282,9 @@ void MySQL::question8()
     cout << endl;
     if (res_set != nullptr && res_set->row_count != 0) {
         row = mysql_fetch_row(res_set);
-        cout << "The book with the biggest num of translations is: " << row[0] << endl <<"the translator name is: " << row[1] << endl <<"the number of translations is: " << row[2] << endl;
+        cout << "The book with the biggest num of translations is: " << row[0] << endl << "the translator name is: " << row[1] << endl << "the number of translations is: " << row[2] << endl;
     }
+
 
     system("pause");
 }
@@ -293,9 +312,13 @@ void MySQL::question9()
         while (((row = mysql_fetch_row(res_set)) != NULL))
             cout << "\t" << row[0] << "\t" << row[1] << "\t" << row[2] << endl;
     }
-
+    else
+    {
+        cout << endl << "This customer: " << input << " " << input2 << " is not exist in the store data base" << endl;
+    }
     system("pause");
 }
+
 
 void MySQL::question10()
 {
@@ -313,33 +336,122 @@ void MySQL::question10()
     cout << endl;
     if (res_set != nullptr && res_set->row_count != 0) {
         row = mysql_fetch_row(res_set);
-        cout << "customer name: " << row[0] << " " << row[1] << endl <<"book title is: " << row[2] << endl << "the order date is: " << row[3] << endl << "supply location:" << row[4] << endl << "is he buy the book?"<< row[5] << endl;
+        cout << "customer name: " << row[0] << " " << row[1] << endl << "book title is: " << row[2] << endl << "the order date is: " << row[3] << endl << "supply location:" << row[4] << endl << "is he buy the book?" << row[5] << endl;
+    }
+    else
+    {
+        cout << endl << "The customer with ID " << input << " is not exist" << endl;
     }
 
     system("pause");
 }
 
+void split(vector<string>& strings, char str[])
+{
+    char* word = strtok(str, "-,\n");
+
+    for (int i = 0; word != NULL; i++)
+    {
+        strings.push_back(word);
+        word = strtok(NULL, "-,\n");
+    }
+}
+
 void MySQL::question11()
 {
-    string first = "select distinct delivery_tracking_number,book.book_author, book_details.book_details_book_weight, book_details_book_weight * 2 as delivery_price from delivery inner join book on book.book_id = delivery.book_id inner join book_details on book_details.book_details_id = book_details.book_details_id where book_title = '";
+    fflush(stdin);
+    const int Isrel_post_courier_service = 10;
+    const int Isrel_post_registered_mail = 15;
+    const int Isrel_post_fast_courier_service = 20;
+    const int Xpress_collecting_point = 8;
+    const int xpress_home_delivery = 30;
+
+    string first = "select distinct delivery_tracking_number,book.book_author, book_details.book_details_book_weight from delivery inner join book on book.book_id = delivery.book_id inner join book_details on book.book_details_id = book_details.book_details_id where book_title = '";
+    string sec = "' or book_title = '";
     string last = "' group by delivery_id; ";
-    string input;
-    char* tmp = stringChar(input);
-    cout << "Calculte shipping: please enter a book title, enter 0 to finish:" << endl;
-    cin >> input;
-    while (strcmp(tmp, 0) != 0)
+
+    char str[200] = { 0 };
+    vector <string> strings;
+
+    std::cout << "Choose book title for delivery" << endl;
+    std::cout << "enter books titles with ',' between :  " << endl;
+    fgets(str, 150, stdin);
+    split(strings, str);
+
+    int input = 0;
+    bool run = true;
+
+    while (run)
     {
-        first = first + input + last;
-    
-        char* all = stringChar(first);
-        mysql_query(connect, all);
-        delete all;
-        if (res_set != nullptr && res_set->row_count != 0) {
-                row = mysql_fetch_row(res_set);
-                cout << "delivery tracking number: " << row[0] << endl << "delivery price: " << row[1] << endl;
-        }
+        std::cout << "What delivery options would you like?" << endl;
+        std::cout << "1: Isrel post courier service" << endl;
+        std::cout << "2: Isrel post registered mail" << endl;
+        std::cout << "3: Isrel post fast courier service" << endl;
+        std::cout << "4: Xpress collecting point" << endl;
+        std::cout << "5: Xpress home delivery" << endl;
+        std::cout << "please enter the number of option you wish to use:" << endl;
+        cin >> input;
+
+        if (input >= 1 && input <= 5)
+            run = false;
     }
-    delete tmp;
+
+
+    string tmp = strings[0];
+
+    for (int i = 1; i < strings.size(); i++)
+        tmp += (sec + strings[i]);
+    first += tmp + last;
+
+
+    char* all = stringChar(first);
+    mysql_query(connect, all);
+    delete all;
+
+    res_set = mysql_store_result(connect);
+
+    string weight;
+    string::size_type size;
+    float s_weight = 0;
+
+    if (res_set != nullptr && res_set->row_count != 0)
+    {
+        while (((row = mysql_fetch_row(res_set)) != NULL)) {
+            weight = row[2];
+            s_weight += std::stof(weight, &size);
+            weight.clear();
+        }
+
+    }
+
+
+    switch (input)
+    {
+    case 1:
+        s_weight *= Isrel_post_courier_service;
+        break;
+
+    case 2:
+        s_weight *= Isrel_post_registered_mail;
+        break;
+
+    case 3:
+        s_weight *= Isrel_post_fast_courier_service;
+        break;
+
+    case 4:
+        s_weight *= Xpress_collecting_point;
+        break;
+
+    case 5:
+        s_weight *= xpress_home_delivery;
+        break;
+    };
+
+    cout << "the total price is: " << s_weight << endl;
+
+    system("pause"); system("cls");;
+
 }
 
 void MySQL::question12()
@@ -360,6 +472,11 @@ void MySQL::question12()
         row = mysql_fetch_row(res_set);
         cout << "customer name: " << row[0] << " " << row[1] << endl << "the order date is: " << row[2] << endl << "transactions price: " << row[3] << endl << "transactions book sold:" << row[4] << endl << "how much deliveries?" << row[5] << endl;
     }
+    else
+    {
+        cout << endl << "The customer with ID " << input << " is not exist" << endl;
+    }
+
 
     system("pause");
 }
@@ -380,8 +497,14 @@ void MySQL::question13()
     cout << endl;
     if (res_set != nullptr && res_set->row_count != 0) {
         row = mysql_fetch_row(res_set);
-        cout << "delivery tracking number: " << row[0] << " " << row[1] << endl << "delivery status: " << row[2] << endl;
+        cout << "delivery tracking number: " << input << endl;
+        cout << "delivery status: " << row[1];
     }
+    else
+    {
+        cout << endl << "The delivery with delivery number " << input << " is not exist" << endl;
+    }
+
 
     system("pause");
 }
@@ -404,6 +527,11 @@ void MySQL::question14()
         row = mysql_fetch_row(res_set);
         cout << "The month is: " << row[0] << endl << "transactions book sold:" << row[1] << endl << "sum of transactions: " << row[2] << endl;
     }
+    else
+    {
+        cout << endl << "Data per month " << input << " is not exist" << endl;
+    }
+
 
     system("pause");
 }
@@ -426,6 +554,10 @@ void MySQL::question15()
         row = mysql_fetch_row(res_set);
         cout << "The month is: " << row[0] << endl << "sum of transactions: " << row[1] << endl;
     }
+    else
+    {
+        cout << endl << "In month " << input << " there were no transactions made using the Beat app" << endl;
+    }
 
     system("pause");
 }
@@ -444,6 +576,7 @@ void MySQL::question16()
         while (((row = mysql_fetch_row(res_set)) != NULL))
             cout << "\t" << row[0] << "\t" << row[1] << "\t" << row[2] << "\t" << row[3] << endl;
     }
+
 
     system("pause");
 }
@@ -476,7 +609,7 @@ void MySQL::question18()
     res_set = mysql_store_result(connect);
     cout << endl;
     if (res_set != nullptr && res_set->row_count != 0) {
-        cout << "number of addutions\t " << "delivery id\t " << "book title\t "<< "publisher name\t " << endl;
+        cout << "number of addutions\t " << "delivery id\t " << "book title\t " << "publisher name\t " << endl;
         while (((row = mysql_fetch_row(res_set)) != NULL))
             cout << "\t" << row[0] << "\t" << row[1] << "\t" << row[2] << "\t" << row[3] << endl;
     }
@@ -514,7 +647,7 @@ void MySQL::question20()
     if (res_set != nullptr && res_set->row_count != 0) {
         cout << "customer name\t " << "Number of days between order and purchase\t" << endl;
         while (((row = mysql_fetch_row(res_set)) != NULL))
-            cout << "\t" << row[0] << " " << row[1] << "\t" << row[2] << "\t" << row[3] << "\t" << row[4] << endl;
+            cout << "\t" << row[0] << " " << row[1] << "\t" << row[2] << endl;
     }
 }
 
@@ -560,18 +693,26 @@ void MySQL::question22()
         row = mysql_fetch_row(res_set);
         cout << "The number of books the store purchased: " << row[1] << endl << "The amount the store paid for the books: " << row[2] << endl;
     }
+    else
+    {
+        cout << endl << "The start date or the date date you enterd: " << input << " " << input2 << " are Invalid" << endl;
+    }
 
     system("pause");
 }
 
 void MySQL::question23()
 {
-    string first = "select sum_pay_month,sum_sell_month,sum_sell_month-sum_pay_month as profit from (select sum(store_payment_electric_bill) + sum(store_payment_water_bill) + sum(store_payment_rent) + sum(store_payment_tax) + sum(store_payment_other) + sum(store_payment_home_number) + sum(store_payment_phone_number) AS sum_pay_month, sum(store_book_price_sell) - sum(store_book_price_buy) + sum(transactions_price) AS sum_sell_month from store_payment inner join store on store_payment.store_id = store.store_id inner join buy_book_store on buy_book_store.buy_book_store_id = store.buy_book_store_id inner join delivery on delivery.delivery_id = store.delivery_id inner join transactions on transactions.transactions_id = delivery.transactions_id or buy_book_store.transactions_id = transactions.transactions_id where store_payment_month = ";
-    string last = " and store_payment_year = 2007) as a; ";
+    string first = "select sum_pay_month,sum_sell_month,sum_sell_month-sum_pay_month as profit from(select sum(store_payment_electric_bill) + sum(store_payment_water_bill) + sum(store_payment_rent) + sum(store_payment_tax)+ sum(store_payment_other) + sum(store_payment_home_number) + sum(store_payment_phone_number) AS sum_pay_month,sum(store_book_price_sell) - sum(store_book_price_buy) + sum(transactions_price) AS sum_sell_month from store_payment inner join store on store_payment.store_id = store.store_id inner join buy_book_store on buy_book_store.buy_book_store_id = store.buy_book_store_id inner join delivery on delivery.delivery_id = store.delivery_id inner join transactions on transactions.transactions_id = delivery.transactions_id or buy_book_store.transactions_id = transactions.transactions_id where store_payment_month = ";
+    string sec = " and store_payment_year = ";
+    string last = ") as a;";
     string input;
+    string input2;
     cout << "Choose a month to see store profit: mm" << endl;
     cin >> input;
-    first = first + input + last;
+    cout << "Choose a year to see store profit: yyyy" << endl;
+    cin >> input2;
+    first = first + input + sec + input2 + last;
     char* all = stringChar(first);
     mysql_query(connect, all);
     delete all;
@@ -581,6 +722,10 @@ void MySQL::question23()
     if (res_set != nullptr && res_set->row_count != 0) {
         row = mysql_fetch_row(res_set);
         cout << "store payment per month: " << row[0] << endl << "store profits per month: " << row[1] << endl << "net store profits per month: " << row[2] << endl;
+    }
+    else
+    {
+        cout << endl << "The start month or the year date you enterd: " << input << " " << input2 << " are Invalid " << endl;
     }
 }
 
@@ -604,7 +749,7 @@ void MySQL::question24()
 
 void MySQL::question25()
 {
-    string first = "select person_first_name, person_last_name, sum(employee_working_hours)*30 from person INNER JOIN employee ON person.person_id = employee.person_id WHERE person.person_first_name = '";
+    string first = "select person_first_name, person_last_name, sum(employee_working_hours)*30 from person inner join employee on person.person_id = employee.person_id where person.person_first_name = '";
     string sec = "' and person.person_last_name = '";
     string last = "';";
     string input;
@@ -622,7 +767,11 @@ void MySQL::question25()
     cout << endl;
     if (res_set != nullptr && res_set->row_count != 0) {
         row = mysql_fetch_row(res_set);
-        cout << "Employee name: " << row[0] << " " << row[1] << endl << "The employee's salary per month "<< row[2] << endl;
+        cout << "Employee name: " << row[0] << " " << row[1] << endl << "The employee's salary per month " << row[2] << endl;
+    }
+    else
+    {
+        cout << endl << "The employee you enterd is not exist: " << input << " " << input2 << endl;
     }
 }
 
@@ -644,6 +793,10 @@ void MySQL::question26()
     if (res_set != nullptr && res_set->row_count != 0) {
         row = mysql_fetch_row(res_set);
         cout << "Employee name: " << row[0] << " " << row[1] << endl << "The amount of transactions: " << row[2] << endl;
+    }
+    else
+    {
+        cout << endl << "The employee you enterd is not exist: " << input << endl;
     }
 
     system("pause");
